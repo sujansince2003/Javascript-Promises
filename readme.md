@@ -465,3 +465,517 @@ fetchData()
 | **State Change** | "pending" → "fulfilled"          | "pending" → "rejected"           |
 | **Next Step**    | Triggers `.then()` handlers      | Triggers `.catch()` handlers     |
 | **Use Case**     | Successful completion            | Failure or error                 |
+
+## **Consuming a Promise in JavaScript**
+
+Consuming a promise refers to using a promise that has been returned by some function or operation. When you consume a promise, you handle its eventual resolution (success) or rejection (failure) using methods like `.then()`, `.catch()`, and optionally `.finally()`.
+
+---
+
+### **Key Methods for Consuming Promises**
+
+1.  **`.then()`**:
+
+    - Used to handle the **fulfilled (resolved)** state of a promise.
+    - It takes a callback function that is executed with the resolved value of the promise.
+
+    **Example:**
+
+    ```
+    const promise = Promise.resolve("Hello, World!");
+
+    promise.then((value) => {
+      console.log("Resolved value:", value); // Output: Resolved value: Hello, World!
+    });
+
+    ```
+
+2.  **`.catch()`**:
+
+    - Used to handle the **rejected** state of a promise.
+    - It takes a callback function that is executed with the reason for rejection.
+
+    **Example:**
+
+    ```
+    const promise = Promise.reject("Something went wrong!");
+
+    promise.catch((error) => {
+      console.error("Error:", error); // Output: Error: Something went wrong!
+    });
+
+    ```
+
+3.  **`.finally()`**:
+
+    - Used to execute code **after the promise is settled** (either resolved or rejected).
+    - It does not modify the value or error of the promise.
+
+    **Example:**
+
+    ```
+    const promise = Promise.resolve("Success!");
+
+    promise
+      .then((value) => {
+        console.log("Resolved value:", value);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      })
+      .finally(() => {
+        console.log("Promise is settled!"); // Always runs
+      });
+
+    ```
+
+---
+
+### **Example: Consuming a Promise from an API**
+
+Promises are commonly used for tasks like fetching data from APIs. Here's an example:
+
+```
+function fetchData() {
+  return new Promise((resolve, reject) => {
+    const success = true; // Simulating a successful API call
+    setTimeout(() => {
+      if (success) {
+        resolve({ id: 1, name: "John Doe" });
+      } else {
+        reject("Failed to fetch data!");
+      }
+    }, 2000);
+  });
+}
+
+fetchData()
+  .then((data) => {
+    console.log("Data received:", data);
+  })
+  .catch((error) => {
+    console.error("Error:", error);
+  })
+  .finally(() => {
+    console.log("Fetch operation complete.");
+  });
+
+```
+
+**Output:**
+
+```
+Fetch operation complete.
+Data received: { id: 1, name: "John Doe" }
+
+```
+
+---
+
+### **Chaining Promises**
+
+When consuming promises, you can chain `.then()` calls to perform sequential operations. Each `.then()` returns a new promise.
+
+**Example:**
+
+```
+const fetchNumber = new Promise((resolve) => resolve(5));
+
+fetchNumber
+  .then((number) => {
+    console.log("Received:", number);
+    return number * 2; // Pass result to the next `.then()`
+  })
+  .then((result) => {
+    console.log("After doubling:", result);
+    return result + 10;
+  })
+  .then((finalResult) => {
+    console.log("Final Result:", finalResult);
+  })
+  .catch((error) => {
+    console.error("Error occurred:", error);
+  });
+
+```
+
+**Output:**
+
+```
+Received: 5
+After doubling: 10
+Final Result: 20
+
+```
+
+---
+
+### **Handling Errors in Promises**
+
+Errors in a promise chain are "bubbled up" to the nearest `.catch()` method.
+
+**Example:**
+
+```
+const promise = new Promise((resolve, reject) => {
+  setTimeout(() => {
+    reject("Something went wrong!");
+  }, 1000);
+});
+
+promise
+  .then((value) => {
+    console.log("Value:", value);
+  })
+  .then(() => {
+    console.log("This will not run if the promise is rejected.");
+  })
+  .catch((error) => {
+    console.error("Caught error:", error);
+  })
+  .finally(() => {
+    console.log("Promise is done!");
+  });
+
+```
+
+**Output:**
+
+```
+Caught error: Something went wrong!
+Promise is done!
+
+```
+
+---
+
+### **Consuming Promises with `async/await`**
+
+Instead of using `.then()` and `.catch()`, you can consume promises with the `async/await` syntax for cleaner and more readable code.
+
+**Example:**
+
+```
+async function fetchData() {
+  try {
+    const response = await new Promise((resolve) => {
+      setTimeout(() => resolve("Fetched data"), 1000);
+    });
+    console.log("Response:", response);
+  } catch (error) {
+    console.error("Error:", error);
+  } finally {
+    console.log("Operation complete.");
+  }
+}
+
+fetchData();
+
+```
+
+**Output:**
+
+```
+Response: Fetched data
+Operation complete.
+
+```
+
+---
+
+### **Real-World Example: Fetch API**
+
+The Fetch API returns a promise, which can be consumed to handle HTTP requests.
+
+**Example with `.then()`:**
+
+```
+fetch("https://api.example.com/data")
+  .then((response) => response.json()) // Parse JSON response
+  .then((data) => {
+    console.log("Data:", data);
+  })
+  .catch((error) => {
+    console.error("Error:", error);
+  });
+
+```
+
+**Example with `async/await`:**
+
+```
+async function fetchData() {
+  try {
+    const response = await fetch("https://api.example.com/data");
+    const data = await response.json();
+    console.log("Data:", data);
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
+
+fetchData();
+
+```
+
+---
+
+### **Summary**
+
+- To consume a promise:
+  1.  Use `.then()` for resolved values.
+  2.  Use `.catch()` for rejected values.
+  3.  Use `.finally()` for cleanup after the promise settles.
+- You can chain `.then()` to handle successive operations.
+- Errors are automatically propagated to the nearest `.catch()` in a chain.
+- Use `async/await` for more readable and synchronous-looking code.
+
+### **Call Stack, Event Loop, Callback Queue, and Microtask Queue in Terms of Consuming Promises**
+
+JavaScript is a **single-threaded** language, which means it executes one task at a time using the **Call Stack**. However, it can handle asynchronous operations efficiently using the **Event Loop**, **Callback Queue**, and **Microtask Queue**.
+
+When consuming Promises, these concepts determine how and when the `.then()`, `.catch()`, or `async/await` handlers are executed.
+
+---
+
+### **Components of JavaScript's Execution Model**
+
+1.  **Call Stack**:
+
+    - It keeps track of the current function being executed.
+    - Functions are pushed onto the stack when called and popped off when they return.
+
+2.  **Event Loop**:
+
+    - Monitors the Call Stack and decides what to execute next.
+    - It prioritizes tasks from the **Microtask Queue** over the **Callback Queue**.
+
+3.  **Microtask Queue**:
+
+    - Contains tasks that need to run immediately after the current operation completes (e.g., `.then()` or `catch()` handlers of Promises).
+    - Has higher priority than the Callback Queue.
+
+4.  **Callback Queue**:
+
+    - Stores callbacks from asynchronous operations (e.g., `setTimeout`, event listeners).
+    - Processed only after the Call Stack is clear and the Microtask Queue is empty.
+
+---
+
+### **Flow of Execution with Promises**
+
+When you consume Promises, here's what happens:
+
+1.  The Promise executor function runs **synchronously** and is placed on the Call Stack.
+2.  If a `.then()` or `catch()` is attached to the Promise, its callback is scheduled in the **Microtask Queue**.
+3.  The Event Loop:
+    - Checks the Call Stack. If it's empty, it processes tasks from the Microtask Queue first.
+    - Only after the Microtask Queue is empty, it processes tasks from the Callback Queue.
+
+---
+
+### **Example: Promises with Microtask and Callback Queue**
+
+```
+console.log("Script start");
+
+const promise = Promise.resolve("Promise resolved");
+
+setTimeout(() => {
+  console.log("setTimeout callback");
+}, 0);
+
+promise
+  .then((value) => {
+    console.log(value); // Microtask
+  })
+  .catch((error) => {
+    console.log(error); // Microtask
+  });
+
+console.log("Script end");
+
+```
+
+---
+
+### **Execution Flow**:
+
+1.  **Call Stack**:
+
+    - `console.log("Script start")` is executed → Logs `Script start`.
+    - `Promise.resolve("Promise resolved")` creates a promise. No `.then()` is executed immediately.
+    - `setTimeout` schedules a callback in the **Callback Queue** and exits.
+    - `console.log("Script end")` is executed → Logs `Script end`.
+
+2.  **Microtask Queue**:
+
+    - The `.then()` callback from the Promise is added to the **Microtask Queue**.
+
+3.  **Callback Queue**:
+
+    - The `setTimeout` callback is added to the **Callback Queue**.
+
+4.  **Event Loop**:
+
+    - After the Call Stack is empty, the Event Loop processes the **Microtask Queue** first.
+    - The `.then()` callback is executed → Logs `Promise resolved`.
+    - Only then does the Event Loop process the **Callback Queue**:
+      - Executes the `setTimeout` callback → Logs `setTimeout callback`.
+
+**Output**:
+
+```
+Script start
+Script end
+Promise resolved
+setTimeout callback
+
+```
+
+---
+
+### **Adding Another Promise**
+
+If we add another Promise to the `.then()` chain:
+
+```
+console.log("Script start");
+
+const promise = Promise.resolve("Promise resolved");
+
+setTimeout(() => {
+  console.log("setTimeout callback");
+}, 0);
+
+promise
+  .then((value) => {
+    console.log(value);
+    return Promise.resolve("Second promise resolved");
+  })
+  .then((value) => {
+    console.log(value);
+  });
+
+console.log("Script end");
+
+```
+
+---
+
+### **Execution Flow**:
+
+1.  **Call Stack**:
+
+    - Executes `console.log("Script start")` → Logs `Script start`.
+    - Executes `Promise.resolve("Promise resolved")`.
+    - Schedules `setTimeout` in the Callback Queue.
+    - Executes `console.log("Script end")` → Logs `Script end`.
+
+2.  **Microtask Queue**:
+
+    - The first `.then()` callback is added to the **Microtask Queue**.
+    - The Event Loop processes it:
+      - Logs `Promise resolved`.
+      - Returns a new Promise, scheduling its `.then()` callback in the **Microtask Queue**.
+
+3.  **Callback Queue**:
+
+    - Processes the `setTimeout` callback after the Microtask Queue is empty.
+
+**Output**:
+
+```
+Script start
+Script end
+Promise resolved
+Second promise resolved
+setTimeout callback
+
+```
+
+---
+
+### **Microtask Queue vs Callback Queue**
+
+1.  Microtasks (e.g., `.then()`):
+
+    - Higher priority.
+    - Always executed before the Callback Queue tasks, even if both are scheduled at the same time.
+
+2.  Callback Queue (e.g., `setTimeout`):
+
+    - Lower priority.
+    - Executed only after the Microtask Queue is empty.
+
+---
+
+### **Promises with `async/await`**
+
+When you use `async/await`, the `await` keyword pauses execution of the **async function** until the Promise is resolved. However, this pausing happens only for the async function, not for the rest of the script.
+
+**Example**:
+
+```
+console.log("Script start");
+
+async function asyncFunction() {
+  console.log("Async function start");
+  const value = await Promise.resolve("Awaited value");
+  console.log(value);
+  console.log("Async function end");
+}
+
+asyncFunction();
+
+setTimeout(() => {
+  console.log("setTimeout callback");
+}, 0);
+
+console.log("Script end");
+
+```
+
+---
+
+### **Execution Flow**:
+
+1.  **Call Stack**:
+
+    - Executes `console.log("Script start")` → Logs `Script start`.
+    - Executes `asyncFunction()`:
+      - Logs `Async function start`.
+      - Encounters `await`, pauses execution of the function.
+    - Executes `setTimeout` → Schedules callback in the Callback Queue.
+    - Executes `console.log("Script end")` → Logs `Script end`.
+
+2.  **Microtask Queue**:
+
+    - Resolves the Promise used with `await` and schedules its continuation (rest of the `asyncFunction`).
+
+3.  **Callback Queue**:
+
+    - Processes the `setTimeout` callback after the Microtask Queue is empty.
+
+**Output**:
+
+```
+Script start
+Async function start
+Script end
+Awaited value
+Async function end
+setTimeout callback
+
+```
+
+---
+
+### **Summary of Execution Priority**
+
+1.  Synchronous code in the Call Stack runs first.
+2.  The Event Loop processes:
+    - Microtask Queue (`.then()` callbacks, resolved Promises).
+    - Callback Queue (`setTimeout`, event listeners).
+
+Promises and `async/await` rely on the **Microtask Queue**, ensuring they are prioritized over other asynchronous tasks like `setTimeout`.
