@@ -979,3 +979,179 @@ setTimeout callback
     - Callback Queue (`setTimeout`, event listeners).
 
 Promises and `async/await` rely on the **Microtask Queue**, ensuring they are prioritized over other asynchronous tasks like `setTimeout`.
+
+### **Difference Between Callback Queue and Microtask Queue**
+
+Both the **Callback Queue** and **Microtask Queue** are used in JavaScript's asynchronous execution model, but they are designed to handle different kinds of tasks. Below is a detailed explanation of what is stored in each queue:
+
+---
+
+### **Callback Queue**
+
+The **Callback Queue** (or **Task Queue**) stores **macrotasks**, which are larger asynchronous operations that are scheduled to run after the Call Stack is empty and the Microtask Queue is cleared.
+
+#### **Examples of Tasks Stored in the Callback Queue**:
+
+1.  **Timers**:
+    - Callbacks from `setTimeout()` and `setInterval()`.
+2.  **DOM Events**:
+    - Click events, keypress events, or any other browser event listeners.
+3.  **I/O Tasks**:
+    - File system operations or network requests in environments like Node.js.
+4.  **Message Channels**:
+    - Callbacks from `postMessage` or `MessageChannel`.
+
+#### **Execution Priority**:
+
+- Lower priority compared to tasks in the Microtask Queue.
+- Executed only after the Call Stack is empty and the Microtask Queue is completely cleared.
+
+**Example**:
+
+```
+console.log("Script start");
+
+setTimeout(() => {
+  console.log("setTimeout callback");
+}, 0);
+
+console.log("Script end");
+
+```
+
+**Execution Flow**:
+
+1.  `console.log("Script start")` → Logs `Script start`.
+2.  `setTimeout` schedules the callback in the **Callback Queue**.
+3.  `console.log("Script end")` → Logs `Script end`.
+4.  After the Call Stack is empty, the Event Loop processes the Callback Queue.
+    - Logs `setTimeout callback`.
+
+**Output**:
+
+```
+Script start
+Script end
+setTimeout callback
+
+```
+
+---
+
+### **Microtask Queue**
+
+The **Microtask Queue** stores **microtasks**, which are smaller, more immediate asynchronous operations. These tasks are scheduled to run as soon as the currently executing code (synchronous or asynchronous) finishes, **before any macrotasks (Callback Queue tasks)**.
+
+#### **Examples of Tasks Stored in the Microtask Queue**:
+
+1.  **Promise Callbacks**:
+    - `.then()`, `.catch()`, and `.finally()` handlers of Promises.
+2.  **Mutation Observers**:
+    - Callbacks from `MutationObserver` API.
+3.  **QueueMicrotask**:
+    - Tasks explicitly queued using `queueMicrotask()`.
+
+#### **Execution Priority**:
+
+- Higher priority compared to the Callback Queue.
+- All microtasks are executed before any macrotask.
+
+**Example**:
+
+```
+console.log("Script start");
+
+Promise.resolve().then(() => {
+  console.log("Promise resolved");
+});
+
+console.log("Script end");
+
+```
+
+**Execution Flow**:
+
+1.  `console.log("Script start")` → Logs `Script start`.
+2.  `Promise.resolve()` schedules its `.then()` callback in the **Microtask Queue**.
+3.  `console.log("Script end")` → Logs `Script end`.
+4.  After the Call Stack is empty, the Event Loop processes the **Microtask Queue**:
+    - Logs `Promise resolved`.
+
+**Output**:
+
+```
+Script start
+Script end
+Promise resolved
+
+```
+
+---
+
+### **Comparison Between Callback Queue and Microtask Queue**
+
+| Feature                | **Callback Queue**                          | **Microtask Queue**                            |
+| ---------------------- | ------------------------------------------- | ---------------------------------------------- |
+| **Tasks Stored**       | Macrotasks (e.g., `setTimeout`, DOM events) | Microtasks (e.g., `.then()`, `queueMicrotask`) |
+| **Execution Priority** | Lower priority, runs after Microtask Queue  | Higher priority, runs before Callback Queue    |
+| **Examples**           | `setTimeout`, `setInterval`, DOM Events     | Promises, Mutation Observers                   |
+| **When Executed**      | After the Microtask Queue is empty          | As soon as the current Call Stack is clear     |
+| **Use Case**           | For less urgent, deferred tasks             | For immediate, small follow-up tasks           |
+
+---
+
+### **Combined Example: Microtask vs Callback Queue**
+
+```
+console.log("Script start");
+
+setTimeout(() => {
+  console.log("setTimeout callback");
+}, 0);
+
+Promise.resolve().then(() => {
+  console.log("Promise resolved");
+});
+
+console.log("Script end");
+
+```
+
+---
+
+**Execution Flow**:
+
+1.  **Call Stack**:
+
+    - `console.log("Script start")` → Logs `Script start`.
+    - `setTimeout` schedules its callback in the **Callback Queue**.
+    - `Promise.resolve()` schedules its `.then()` callback in the **Microtask Queue**.
+    - `console.log("Script end")` → Logs `Script end`.
+
+2.  **Microtask Queue**:
+
+    - Executes `Promise.resolve().then()` → Logs `Promise resolved`.
+
+3.  **Callback Queue**:
+
+    - Executes `setTimeout` callback → Logs `setTimeout callback`.
+
+**Output**:
+
+```
+Script start
+Script end
+Promise resolved
+setTimeout callback
+
+```
+
+---
+
+### **Why This Matters**
+
+Understanding the differences between the Callback Queue and Microtask Queue is essential for:
+
+1.  Writing predictable asynchronous code.
+2.  Debugging timing issues in your applications.
+3.  Optimizing performance by appropriately scheduling tasks.
