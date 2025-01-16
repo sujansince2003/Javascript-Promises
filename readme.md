@@ -1155,3 +1155,9 @@ Understanding the differences between the Callback Queue and Microtask Queue is 
 1.  Writing predictable asynchronous code.
 2.  Debugging timing issues in your applications.
 3.  Optimizing performance by appropriately scheduling tasks.
+
+### **Key Points to Remember**
+
+1.  **Global Code** (synchronous) is executed first.
+2.  **Microtask Queue** tasks (Promises, etc.) have higher priority than the **Callback Queue** tasks.
+3.  The **Callback Queue** (macrotasks) is processed only after the Microtask Queue is cleared.
